@@ -1,0 +1,31 @@
+{ "set": [
+    {
+      "weight": "1.25",
+      "count": "1"
+    },
+    {
+      "weight": "2.5",
+      "count": "2"
+    },
+    {
+      "weight": "5",
+      "count": "2"
+    },
+    {
+      "weight": "10",
+      "count": "2"
+    },
+    {
+      "weight": "25",
+      "count": "2"
+    },
+    {
+      "weight": "35",
+      "count": "2"
+    },
+    {
+      "weight": "45",
+      "count": "3"
+    }
+  ]
+}
