@@ -6,7 +6,7 @@ dec () {
 
 goal="${1}"
 goal=$(dec "(${goal}-45)/2")
-weight_json=$(cat weights.json)
+weight_json=$(cat inventory.json)
 side="0"
 
 weight_collection=()

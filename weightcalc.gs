@@ -1,16 +1,21 @@
 // get values for each set, selecting only non-blank cells
-var workSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Plating");
-var liftingSets = workSheet.getRange('C2:C').getValues().reduce(function(acc, row) {
+var workSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Plating');
+var liftingSets = workSheet.getRange('F4:F').getValues().reduce(function(acc, row) {
   return acc.concat(row.filter(function(x) {
-    return x != "";
+    return x != '';
   }));
 }, []);
 
 // get full inventory of available plates
-var plateInventory = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Inventory").getDataRange().getValues();
+var plateInventory = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Inventory').getDataRange().getValues();
 
 function weightCalc(setWeight)
 {
+  // calculate weight total per side: (total - bar) / 2
+  var goalSide = parseFloat((setWeight - 45) / 2);
+  var totalSide = parseFloat(0);
+  var sidePlates = [];
+  
   // build remainingPlates as a list from plateInventory: weight x count
   var remainingPlates = [];
   for (var i = 1 ; i < plateInventory.length; i++) {
@@ -18,14 +23,8 @@ function weightCalc(setWeight)
       remainingPlates.push(plateInventory[i][0]);
     }
   }
-  // calculate weight total per side: (total - bar) / 2
-  var goalSide = parseFloat((setWeight - 45) / 2);
-  var totalSide = parseFloat(0);
-  
+
   // build totalSide up to goalSide via adding (plate)s to sidePlates
-  // subtract from remainingPlates with each (plate) used
-  // sidePlates = list of (plate)s to use, in order
-  var sidePlates = [];
   while ( totalSide <= goalSide, remainingPlates.length > 0 ) {
     var plate = parseFloat(remainingPlates[0]);
     if ( totalSide + plate <= goalSide ) {
@@ -35,25 +34,21 @@ function weightCalc(setWeight)
     remainingPlates.shift();
   }
   
-  // return the per-side total and the list of plates
-  var sideWeight = [totalSide, sidePlates]
-  return sideWeight;
+  return sidePlates;
 }
 
 function weightPrint() {
-  for (var i = 1 ; i < liftingSets.length; i++) {
-
-    var setSide = liftingSets[i];
-
-    // if no value is given for the weight total, skip it
-    if ( setSide == workSheet.getRange((i+2),3).getValue()) {
-      
-      // build out the per-side total and the stack of plates
-      workSheet.getRange((i+2),4).setValue(weightCalc(liftingSets[i])[0]);
-      var setStack = weightCalc(liftingSets[i])[1];
+  for (var i = 0 ; liftingSets.length > 0 ; i+=2 ) {
+    
+    // verify that the stored set total matches the number listed
+    var setSide = liftingSets[0];
+    if ( setSide == workSheet.getRange((i+5),6).getMergedRanges()[0].getCell(1, 1).getValue()) {
+      var setStack = weightCalc(setSide);
       for (var j = 0 ; j < setStack.length; j++) {
-        workSheet.getRange((i+2),(j+5)).setValue(setStack[j]);
+        var cell = workSheet.getRange((i+5),(j+8));
+        cell.getMergedRanges()[0].getCell(1, 1).setValue(setStack[j]);
       }
+      liftingSets.shift();
     }
   }
 }
@@ -62,6 +57,6 @@ function weightPrint() {
 function onOpen() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet();
   var menuEntries = [];
-  menuEntries.push({name: "Calculate Plates Per Side", functionName: "weightPrint"}); 
-  sheet.addMenu("Plate Calculator", menuEntries);  
+  menuEntries.push({name: 'Calculate Plates Per Side', functionName: 'weightPrint'}); 
+  sheet.addMenu('Plate Calculator', menuEntries);
 }
